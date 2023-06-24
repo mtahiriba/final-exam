@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 const Home = () => {
  
   const [recipieData, setRecipieData] = useState(null);
+  const [Search, setSearch] = useState("")
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -45,7 +46,11 @@ const Home = () => {
             </div>
           </div>
         </td>
-        <td>{reciepe.ingredients}</td>
+        <td>
+          <ul>
+            {reciepe.ingredients.map((ingredient) => (<li>{ingredient}</li>))}
+          </ul>
+        </td>
         <td>{reciepe.instructions}</td>
         <td>
           <div className="w-full justify-center flex">
@@ -71,8 +76,31 @@ const Home = () => {
     navigate("/add-reciepe");
   };
 
+  const handleSearch = () => {
+    fetch(`http://localhost:3002/api/recipe/search/${Search}`)
+      .then((response) => response.json())
+      .then((data) => setRecipieData(data));
+  }
+
   return (
-    <div className="flex flex-col">
+    <div>
+      <div className="flex space-x-3 justify-center items-center">
+      <input
+        className="border py-3 px-5 w-96 my-5 rounded-md bg-gray-100"
+        type="text"
+        name="search"
+        value={Search}
+        onChange={(e)=>{setSearch(e.target.value)}}
+        placeholder="Enter Title"
+      />
+        <button
+          className="bg-green-500  px-4 border shadow-md rounded-md h-14 text-white"
+          onClick={handleSearch}
+        >
+          Search
+        </button>
+      </div>
+      <div className="flex flex-col">
       <table className=" table-auto w-full">
         <tbody>
           <tr className=" text-left bg-gray-200 h-16  text-gray-500">
@@ -94,6 +122,8 @@ const Home = () => {
         </button>
       </div>
     </div>
+    </div>
+    
   );
 };
 

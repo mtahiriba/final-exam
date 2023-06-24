@@ -22,7 +22,16 @@ app.get('/api/recipies', async (req, res) => {
     res.json(recipies);
 });
 
-app.post('/api/recipe/save', async (req, res) => {
+const validatemidleware = (req, res, next) => {
+    const {image, title, description, ingredients, instructions} = req.body;
+    if(!title || !description || !instructions)
+        return res.json({status: 'Please fill all fields', error: 'Invalid data'});
+    else if(!ingredients.length)
+        return res.json({status: 'error', error: 'Invalid ingredients'});
+    next();
+};
+
+app.post('/api/recipe/save', validatemidleware, async (req, res) => {
     const recipe = await Recipies.create(req.body);
     if(!recipe) 
         return res.json({status: 'error', error: 'Invalid recipe'});
@@ -45,12 +54,20 @@ app.get('/api/recipe/:id', async (req, res) => {
     res.json(recipe);
 });
 
-app.put('/api/recipe/update/:id', async (req, res) => {
+app.put('/api/recipe/update/:id', validatemidleware, async (req, res) => {
     const id = req?.params?.id;
     const recipe = await Recipies.findByIdAndUpdate(id, req.body);
     if(!recipe)
         return res.json({status: 'error', error: 'Invalid recipe'});
     res.json({status: 'ok'});
+});
+
+app.get('/api/recipe/search/:title', async (req, res) => {
+    const title = req?.params?.title;
+    const recipe = await Recipies.find({title: {$regex: title, $options: 'i'}});
+    if(!recipe)
+        return res.json({status: 'error', error: 'Invalid recipe'});
+    res.json(recipe);
 });
 
 app.listen(3002, () => {

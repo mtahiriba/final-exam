@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRef } from "react";
+
+const ingredients = ["ingredient 1", "ingredient 2", "ingredient 3", "ingredient 4", "ingredient 5", "ingredient 6"]
+
+
 const AddUser = ({ edit }) => {
 
     const [selectedImage, setSelectedImage] = useState(null);
     const fileInputRef = useRef(null);
-  
+
     const [reciepe, setReciepe] = useState({
     image: "",
     title: "",
     description: "",
-    ingredients: "",
+    ingredients: [],
     instructions: "",
   });
 
@@ -31,6 +35,7 @@ const AddUser = ({ edit }) => {
   };
 
   const handleSubmit = (e) => {
+
     if (edit) {
       fetch(`http://localhost:3002/api/recipe/update/${id}`, {
         method: "PUT",
@@ -53,10 +58,15 @@ const AddUser = ({ edit }) => {
         body: JSON.stringify(reciepe),
       })
         .then((response) => response.json())
-        .then((data) => console.log(data))
-        .catch((error) => console.error(error));
+        .then((data) => {
+            console.log(data)
+        })
+        .catch((error) => {
+            console.error(error)
+            alert(error.status);
+        });
 
-      navigate("/");
+        navigate("/");
     }
   };
 
@@ -74,8 +84,19 @@ const AddUser = ({ edit }) => {
       };
 
       reader.readAsDataURL(file);
-    //   const imageUrl = URL.createObjectURL(file);
-    //   setReciepe.image = imageUrl;
+      const imageUrl = URL.createObjectURL(file);
+        setReciepe({ ...reciepe, image: imageUrl });
+    }
+  };
+
+
+
+  const handleCheckboxChange = (event) => {
+    const { value, checked } = event.target;
+    if (checked) {
+        setReciepe({ ...reciepe, ingredients: [...reciepe.ingredients, value] });
+    } else {
+        setReciepe({ ...reciepe, ingredients: reciepe.ingredients.filter((ingredient) => ingredient !== value) });
     }
   };
 
@@ -140,16 +161,26 @@ const AddUser = ({ edit }) => {
                 
                 
               </div>
-              <div className="w-1/2 h-full flex flex-col justify-around">
-              <input
-                  className="border py-3 px-5 w-full rounded-md bg-gray-100"
-                  type="text"
-                  name="ingredients"
-                  value={reciepe.ingredients}
-                  onChange={handleChange}
-                  placeholder="Inter ingredients"
-                />
+              <div className="w-1/2 h-full flex flex-col justify-start">
+                <div>
+                    <h1 className=" font-bold mb-6">Select Ingredient</h1>
+                    {/* {console.log(reciepe.ingredients)} */}
+                    {ingredients.map((ingredient) => {
+                        return (
+                            <label className="flex items-center mb-2">
+                                <input
+                                type="checkbox"
+                                value={ingredient}
+                                checked={reciepe.ingredients.includes(ingredient)}
+                                onChange={handleCheckboxChange}
+                                className="form-checkbox h-5 w-5 text-indigo-600"
+                                />
+                                <span className="ml-2 text-gray-700">{ingredient}</span>
+                            </label>
+                        )
+                    })}
                 
+                </div>
               </div>
             </div>
             <div className="w-full h-1/6 flex justify-end p-5">
